@@ -42,7 +42,15 @@ int main (int argc, char *argv[])
 	fseek(fp, 0L, SEEK_END);
 	fileLen = ftell(fp);
 	fseek(fp, 0L, SEEK_SET);
-
+	
+	if(fileLen > (BufLen-4))
+	{
+		printf("Error: size over \n");
+		free(Buf);
+		fclose(fp);
+		return -1;
+	}
+/*
 	if ( BufLen > fileLen )
 	{
 		printf("Usage: unsupported size\n");
@@ -50,9 +58,9 @@ int main (int argc, char *argv[])
 		fclose(fp);
 		return -1;
 	}
-
+*/
 	nbytes = fread(Buf, 1, BufLen, fp);
-
+/*
 	if ( nbytes != BufLen )
 	{
 		printf("source file read error\n");
@@ -60,8 +68,10 @@ int main (int argc, char *argv[])
 		fclose(fp);
 		return -1;
 	}
-
+*/
 	fclose(fp);
+
+	printf("source file read %d\n",nbytes);
 
 	for(i = 0;i < (14 * 1024) - 4;i++)
 	{
@@ -90,6 +100,8 @@ int main (int argc, char *argv[])
 
 	free(Buf);
 	fclose(fp);
-
+	
+	printf("bl2 len %d\n",nbytes);
+	
 	return 0;
 }
