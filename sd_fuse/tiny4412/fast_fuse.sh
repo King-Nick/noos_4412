@@ -61,7 +61,7 @@ ${MKBL2} ${E4412_UBOOT} bl2.bin 14336
 # fusing images
 
 bl2_position=17
-uboot_position=49
+# uboot_position=49
 
 #<BL2 fusing>
 echo "---------------------------------------"
@@ -69,9 +69,9 @@ echo "BL2 fusing"
 dd iflag=dsync oflag=dsync if=./bl2.bin of=$1 seek=$bl2_position
 
 #<u-boot fusing>
-echo "---------------------------------------"
-echo "u-boot fusing"
-dd iflag=dsync oflag=dsync if=${E4412_UBOOT} of=$1 seek=$uboot_position
+# echo "---------------------------------------"
+# echo "u-boot fusing"
+# dd iflag=dsync oflag=dsync if=${E4412_UBOOT} of=$1 seek=$uboot_position
 
 #<flush to disk>
 sync

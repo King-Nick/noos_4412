@@ -41,8 +41,8 @@ fi
 ####################################
 # check files
 
-E4412_UBOOT=../../u-boot.bin
-MKBL2=../mkbl2
+E4412_UBOOT=../../u-boot.bin							#source code
+MKBL2=../mkbl2											#tool
 
 if [ ! -f ${E4412_UBOOT} ]; then
 	echo "Error: u-boot.bin NOT found, please build it & try again."
@@ -55,15 +55,15 @@ if [ ! -f ${MKBL2} ]; then
 fi
 
 #<make bl2>
-${MKBL2} ${E4412_UBOOT} bl2.bin 14336
+${MKBL2} ${E4412_UBOOT} bl2.bin 14336					#14*1024
 
 ####################################
 # fusing images
 
 signed_bl1_position=1
 bl2_position=17
-uboot_position=49			#\uboot_tiny4412\arch\arm\include\asm\arch-exynos>movi_partition.h
-tzsw_position=705			#\uboot_tiny4412\arch\arm\include\asm\arch-exynos>movi_partition.h
+uboot_position=49			#\uboot_tiny4412\arch\arm\include\asm\arch-exynos>movi_partition.h MOVI_UBOOT_POS
+tzsw_position=705			#\uboot_tiny4412\arch\arm\include\asm\arch-exynos>movi_partition.h MOVI_UBOOT_POS+MOVI_UBOOT_BLKCNT
 
 #<BL1 fusing>
 echo "---------------------------------------"

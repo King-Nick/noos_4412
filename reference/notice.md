@@ -21,17 +21,68 @@
 S5PV210是在bin文件的状况，4412的是在这个14K的Bin文件尾部。V310-EVT1-mkbl2.c程序中虽然我做了必要    
 修改，让其程序适应我们裸机程序，但其核心部分是没有变动的，程序主要内容也是别人写的，我也不做过多   
 说明，如有需求，大家可以自己分析理解一下，如不想了解，直接应用就行。   
+## 修改代码
+ - V310-EVT1-mkbl2.c   
+	mkbl2文件中需要修改，文件在读入过程中会进行判断，发现文件小于buff大小时，   
+	会拒绝生成，需要将该限制解除，才可以生成裸机的代码.   
+	1. 45行   
+	增加部分：    
+		``` c
+			if(fileLen > (BufLen-4))  
+			{      
+				printf("Error: size over \n");   
+				free(Buf);    
+				fclose(fp);
+				return -1;
+			}
+		```    
+	注释部分：   
+	~~if ( BufLen > fileLen )  
+		{   
+			printf("Usage: unsupported size\n");   
+			free(Buf);   
+			fclose(fp);  
+			return -1;   
+		}~~       
+	2. 63行   
+	注释部分：   
+	~~if ( nbytes != BufLen )    
+		{   
+			printf("source file read error\n");   
+			free(Buf);   
+			fclose(fp);   
+			return -1;   
+		}~~	
+ - sd_fusing.sh     
+	裸机运行执行的BL2，所有后面的保护解除的程序可以直接不用写入SD卡中，  
+	降低擦写时间，主要是裸机的程序会非常小的。   
+	sd_fusing.sh注释部分：   
+	~~\#\<u-boot fusing>   
+	\# echo "---------------------------------------"   
+	\# echo "u-boot fusing"   
+	\# dd iflag=dsync oflag=dsync if=${E4412_UBOOT} of=$1 seek=$uboot_position   
+	\# \#<TrustZone S/W fusing>    
+	\# echo "---------------------------------------"    
+	\# echo "TrustZone S/W fusing"   
+	\# dd iflag=dsync oflag=dsync if=./E4412_tzsw.bin of=$1 seek=$tzsw_position~~	
+ - fast_fuse.sh
+	在已经通过sd_fusing.sh 处理过的SD卡可以直接使用fast_fuse.sh加载修改后的程序   
+	fast_fuse.sh注释部分：   
+	~~\#\<u-boot fusing>   
+	\# echo "---------------------------------------"    
+	\# echo "u-boot fusing"   
+	\# dd iflag=dsync oflag=dsync if=${E4412_UBOOT} of=$1 seek=$uboot_position~~
 
 ## 控制 icache 的代码
-``` c
-	// 控制 icache 的代码
-	#ifdef CONFIG_SYS_ICACHE_OFF   
-	bic r0, r0, #0x00001000          @ clear bit 12 (I) I-cache 
-	#else 
-	orr r0, r0, #0x00001000          @ set bit 12 (I) I-cache 
-	#endif 
-	mcr p15, 0, r0, c1, c0, 0 
-```
+	``` c
+		// 控制 icache 的代码
+		#ifdef CONFIG_SYS_ICACHE_OFF   
+		bic r0, r0, #0x00001000          @ clear bit 12 (I) I-cache 
+		#else 
+		orr r0, r0, #0x00001000          @ set bit 12 (I) I-cache 
+		#endif 
+		mcr p15, 0, r0, c1, c0, 0 
+	```
 
 ## data、text和bss
 下面解释一下什么是 data、text、bss 段： 
@@ -63,9 +114,14 @@ S5PV210是在bin文件的状况，4412的是在这个14K的Bin文件尾部。V31
 	ADRL是中等范围的地址读取指令。会被编译器翻译成两条指令。如果不能用两条指令表示，则产生错误。    
 	ADRL能加载的地址范围当为非字节对齐时是-64K~64K之间；当为字节对齐时是-256K~256K之间。   
 
+
+
 ### 细节引入
 堆,权限可读写，可执行，无映像文件，匿名，可向上扩展（即：堆的起始指针在最底部）
 栈，权限可读写，不可执行，无映像文件，匿名，可向下扩展（即：栈的起始指针在最顶部）
+
+### 记录命令			
+	grep -nr "查找内容"
 
 **Markdown　Extra**　表格语法：
 
